@@ -1,7 +1,7 @@
 import { defineConfig } from '@playwright/test';
 export default defineConfig({
   testDir:'./tests/browser',
-  timeout:30000,
+  timeout:process.env.CI?90000:30000,
   fullyParallel:false,
   workers:1,
   use:{baseURL:process.env.CHESS_TEST_URL||'http://127.0.0.1:5173/',headless:true,viewport:{width:1440,height:1000},launchOptions:{executablePath:process.env.CHROME_PATH||(process.platform==='win32'?'C:/Program Files/Google/Chrome/Application/chrome.exe':undefined),args:['--enable-unsafe-swiftshader']}},

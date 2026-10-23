@@ -10,6 +10,7 @@ export class Board3D {
     this.container = container;
     this.callbacks = callbacks;
     this.active = true;
+    this.dirty = true;
     this.animations = [];
     this.pieces = new Map();
     this.tiles = [];
@@ -28,6 +29,7 @@ export class Board3D {
     this.renderer.domElement.addEventListener('webglcontextlost', (event) => { event.preventDefault(); callbacks.onFailure(); });
     container.append(this.renderer.domElement);
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controls.addEventListener('change', () => { this.dirty = true; });
     this.controls.target.set(0, 0, 0);
     this.controls.enableDamping = true;
     this.controls.enablePan = false;
@@ -194,6 +196,7 @@ export class Board3D {
     mesh.rotation.set(-Math.PI/2,0,angle);mesh.position.set(x,.251,z);this.labels.add(mesh);
   }
   setTheme(name) {
+    this.dirty=true;
     this.theme=themes[name];
     for (const [name,material] of Object.entries(this.materials)) material.color.set(this.theme[{w:'ivory',b:'ebony',gold:'accent'}[name]||name]);
     this.scene.fog=new THREE.Fog(this.theme.fog,32,75);
@@ -204,6 +207,7 @@ export class Board3D {
     }
   }
   resize() {
+    this.dirty=true;
     const {width,height}=this.container.getBoundingClientRect();
     if(!width||!height)return;
     this.camera.aspect=width/height;this.camera.updateProjectionMatrix();this.renderer.setSize(width,height);
@@ -221,8 +225,9 @@ export class Board3D {
     this.updateFog();
   }
   updateFog() {if(this.scene.fog){const distance=this.camera.position.length();this.scene.fog.near=distance+12;this.scene.fog.far=distance+65;}}
-  setActive(active) { this.active=active; if(active)this.resize(); }
+  setActive(active) { this.active=active; this.dirty=true; if(active)this.resize(); }
   update({chess, selected, legal, lastMove, hints, coordinates}, move) {
+    this.dirty=true;
     this.finishAnimations();
     this.labels.visible=coordinates;
     if(move) {
@@ -296,7 +301,7 @@ export class Board3D {
     canvas.addEventListener('pointermove',event=>{
       if(this.drag&&this.down){
         if(Math.hypot(event.clientX-this.down.x,event.clientY-this.down.y)>6)this.drag.moved=true;
-        if(this.drag.moved){const p=this.groundPoint(event);if(p){this.drag.mesh.position.copy(p);this.drag.mesh.position.y=.65;}}
+        if(this.drag.moved){const p=this.groundPoint(event);if(p){this.drag.mesh.position.copy(p);this.drag.mesh.position.y=.65;this.dirty=true;}}
       } else canvas.style.cursor=this.pick(event)?'pointer':'grab';
     });
     canvas.addEventListener('pointerup',event=>{
@@ -305,19 +310,24 @@ export class Board3D {
       if(this.drag){
         const drag=this.drag;this.drag=null;
         drag.mesh.position.copy(drag.origin);
+        this.dirty=true;
         // Pick the destination after restoring the lifted mesh, so it cannot intercept the ray.
         const to=this.pick(event);this.controls.enabled=true;
         if(drag.moved){if(to)this.callbacks.onDrop(drag.square,to);}else this.callbacks.onSquare(drag.square);
       }else if(down&&Math.hypot(event.clientX-down.x,event.clientY-down.y)<7){const square=this.pick(event);if(square)this.callbacks.onSquare(square);}
     });
-    canvas.addEventListener('pointercancel',()=>{if(this.drag)this.drag.mesh.position.copy(this.drag.origin);this.drag=null;this.down=null;this.controls.enabled=true;});
+    canvas.addEventListener('pointercancel',()=>{if(this.drag)this.drag.mesh.position.copy(this.drag.origin);this.drag=null;this.down=null;this.controls.enabled=true;this.dirty=true;});
   }
   tick(time) {
     this.frame=requestAnimationFrame(this.tick);
     if(!this.active||document.hidden)return;
     this.controls.update();
-    this.updateFog();
+    if(this.animations.length)this.dirty=true;
     this.animations=this.animations.filter(a=>{const t=Math.min(1,(time-a.start)/300),e=1-(1-t)**3;a.object.position.lerpVectors(a.from,a.to,e);a.object.position.y+=Math.sin(Math.PI*t)*.3;return t<1;});
-    this.renderer.render(this.scene,this.camera);
+    if(this.dirty){
+      this.updateFog();
+      this.renderer.render(this.scene,this.camera);
+      this.dirty=false;
+    }
   }
 }
