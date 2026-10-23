@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#dedbd1" />
+    <meta name="description" content="An intimate chess table. Play in two dimensions or explore a sculpted three-dimensional board." />
+    <title>Atelier — Chess</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body>
+    <main id="app">
+      <div class="atmosphere" aria-hidden="true"></div>
+      <button id="settings-toggle" class="icon-button settings-toggle" aria-label="Open settings" title="Settings (S)"></button>
+      <section id="table" aria-label="Chess table">
+        <div id="board-3d" aria-label="Interactive three dimensional chessboard"></div>
+        <div id="board-2d" class="board-shell" hidden>
+          <div class="board-inlay"><div id="squares" role="group" aria-label="Chessboard"></div></div>
+          <div id="file-labels" class="file-labels" aria-hidden="true"></div>
+          <div id="rank-labels" class="rank-labels" aria-hidden="true"></div>
+        </div>
+        <div class="table-status" id="table-status"><span id="turn-dot" class="turn-dot"></span><span id="status" role="status" aria-live="polite">White to move</span></div>
+      </section>
+      <div id="toast" class="toast" role="status"></div>
+      <dialog id="settings" class="settings-panel" aria-labelledby="settings-heading">
+        <header class="panel-header"><div><span class="eyebrow">YOUR TABLE</span><h1 id="settings-heading">Make yourself at home.</h1></div><button class="icon-button close-dialog" aria-label="Close settings"></button></header>
+        <section class="setting-section">
+          <div class="label-row"><h2>Perspective</h2><span>One game. Two ways to see it.</span></div>
+          <div class="view-options" role="group" aria-label="Board perspective">
+            <button data-view="2d"><svg viewBox="0 0 64 46" aria-hidden="true"><path d="M15 6h34v34H15zM15 17h34M15 29h34M26 6v34M38 6v34"/></svg><span>Classic <small>2D</small></span></button>
+            <button data-view="3d"><svg viewBox="0 0 64 46" aria-hidden="true"><path d="m32 5 26 14-26 16L6 19Z M6 19v7l26 15 26-15v-7M32 35v6M15 14l26 16M24 9l26 16M15 25 26-16M24 30l26-16"/></svg><span>Sculpted <small>3D</small></span></button>
+          </div>
+        </section>
+        <section class="setting-section">
+          <div class="label-row"><h2>Palette</h2><span>A change of atmosphere.</span></div>
+          <div class="palette-options" role="group" aria-label="Color palette">
+            <button data-theme="atelier"><span class="swatch atelier"></span><span>Atelier</span></button>
+            <button data-theme="nocturne"><span class="swatch nocturne"></span><span>Nocturne</span></button>
+            <button data-theme="rosewood"><span class="swatch rosewood"></span><span>Rosewood</span></button>
+          </div>
+        </section>
+        <section class="setting-section">
+          <div class="label-row"><h2>Across the table</h2></div>
+          <div class="segmented" role="group" aria-label="Opponent"><button data-opponent="local">A friend</button><button data-opponent="computer">Computer</button></div>
+          <div id="computer-options" class="computer-options" hidden><label>Your pieces<select id="human-color"><option value="w">Ivory · White</option><option value="b">Dark · Black</option></select></label><label>Difficulty<select id="difficulty"><option value="1">Casual</option><option value="2" selected>Considered</option><option value="3">Challenging</option></select></label></div>
+          <div class="toggle-row"><label for="hints">Legal move hints</label><input type="checkbox" id="hints" role="switch" checked /></div>
+          <div class="toggle-row"><label for="sound">Piece sounds</label><input type="checkbox" id="sound" role="switch" checked /></div>
+          <div class="toggle-row"><label for="coordinates">Board coordinates</label><input type="checkbox" id="coordinates" role="switch" checked /></div>
+        </section>
+        <section class="setting-section game-actions">
+          <div class="action-grid"><button id="flip-board">↻ <span>Turn the board</span></button><button id="undo-move">↶ <span>Take back</span></button><button id="offer-draw">½ <span>Offer a draw</span></button><button id="claim-draw">= <span>Claim a draw</span></button></div>
+          <div class="action-grid bottom-actions"><button id="new-game" class="primary-button">A new game <span>↗</span></button><button id="resign">Resign</button></div>
+        </section>
+        <details class="game-record"><summary>Game record <span id="move-count">0 moves</span></summary><ol id="move-list" aria-label="Move history"></ol><button id="export-pgn" class="text-button">Download PGN ↗</button></details>
+        <footer class="panel-footer"><span>Click or drag to move.<br>In 3D, drag the table to orbit. Scroll to zoom.</span><span><kbd>F</kbd> flip &nbsp; <kbd>V</kbd> view<br><kbd>U</kbd> take back &nbsp; <kbd>S</kbd> settings</span></footer>
+      </dialog>
+      <dialog id="promotion" class="small-dialog" aria-labelledby="promotion-title"><span class="eyebrow">A WELL-EARNED ARRIVAL</span><h2 id="promotion-title">Choose your piece.</h2><div id="promotion-pieces"></div><button class="text-button" id="cancel-promotion">Cancel move</button></dialog>
+      <dialog id="confirmation" class="small-dialog" aria-labelledby="confirmation-title"><span class="eyebrow" id="confirmation-eyebrow">AT THE TABLE</span><h2 id="confirmation-title"></h2><p id="confirmation-detail"></p><div class="dialog-actions"><button id="confirmation-cancel" class="secondary-button">Keep playing</button><button id="confirmation-ok" class="primary-button">Continue</button></div></dialog>
+      <dialog id="result" class="small-dialog result-dialog" aria-labelledby="result-title"><div id="result-symbol" class="result-symbol">½</div><span class="eyebrow" id="result-reason"></span><h2 id="result-title"></h2><p id="result-detail"></p><div class="dialog-actions"><button id="review-board" class="secondary-button">View the board</button><button id="play-again" class="primary-button">Play again ↗</button></div></dialog>
+    </main>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

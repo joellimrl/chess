@@ -100,5 +100,9 @@ dist
 # DynamoDB Local files
 .dynamodb/
 
+# Local browser verification artifacts
+test-results/
+playwright-report/
+
 # TernJS port file
 .tern-port
